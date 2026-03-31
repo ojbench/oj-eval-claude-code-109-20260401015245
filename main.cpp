@@ -6,28 +6,43 @@ const long long MOD = 1000000007;
 const int MAXN = 505;
 
 int n;
-int orig_adj[MAXN][MAXN];
 int adj[MAXN][MAXN];
 long long dp[MAXN][MAXN];
 
-long long solve(int l, int r) {
-    if (l > r) return 1;
-    if (l == r) return 1;
+long long solve(int i, int j) {
+    if (i == j) return 1;
 
-    if (dp[l][r] != -1) return dp[l][r];
+    int len = (j - i + n) % n;
+    if (len == 0) len = n;
+    if (len == 1) return adj[i][j];
+
+    if (dp[i][j] != -1) return dp[i][j];
 
     long long result = 0;
 
-    for (int k = l + 1; k <= r; k++) {
-        if (adj[l][k] == 0) continue;
+    for (int k = (i + 1) % n; ; k = (k + 1) % n) {
+        if (k == (j + 1) % n) break;
 
-        long long left = solve(l + 1, k - 1);
-        long long right = solve(k + 1, r);
+        if (adj[i][k] == 0) continue;
+
+        long long left = 1, right = 1;
+
+        int next_i = (i + 1) % n;
+        int prev_k = (k - 1 + n) % n;
+        if (next_i != k) {
+            left = solve(next_i, prev_k);
+        }
+
+        if (k != j) {
+            right = solve(k, j);
+        }
 
         result = (result + left * right % MOD) % MOD;
+
+        if (k == j) break;
     }
 
-    dp[l][r] = result;
+    dp[i][j] = result;
     return result;
 }
 
@@ -36,7 +51,7 @@ int main() {
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            cin >> orig_adj[i][j];
+            cin >> adj[i][j];
         }
     }
 
@@ -45,22 +60,10 @@ int main() {
         return 0;
     }
 
-    long long answer = 0;
+    memset(dp, -1, sizeof(dp));
 
-    // Sum over all possible gaps
-    for (int gap = 0; gap < n; gap++) {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                int orig_i = (gap + 1 + i) % n;
-                int orig_j = (gap + 1 + j) % n;
-                adj[i][j] = orig_adj[orig_i][orig_j];
-            }
-        }
-
-        memset(dp, -1, sizeof(dp));
-        long long ways = solve(0, n - 1);
-        answer = (answer + ways) % MOD;
-    }
+    // Just use root = 0
+    long long answer = solve(0, n - 1);
 
     cout << answer << endl;
     return 0;
