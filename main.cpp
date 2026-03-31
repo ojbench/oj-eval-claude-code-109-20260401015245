@@ -62,7 +62,6 @@ int main() {
 
     memset(dp, -1, sizeof(dp));
 
-    // Just use root = 0
     long long answer = solve(0, n - 1);
 
     cout << answer << endl;
